@@ -11,7 +11,12 @@ import Html.Events exposing (onClick, onInput, onSubmit)
 
 
 main =
-    Browser.sandbox { init = init, update = update, view = view }
+    Browser.element
+        { init = init
+        , update = update
+        , view = view
+        , subscriptions = subscriptions
+        }
 
 
 
@@ -31,12 +36,12 @@ type alias Model =
     }
 
 
-init : Model
-init =
-    { nextId = 0
+init : List ToDo -> (Model, Cmd Msg)
+init localToDos =
+    ({ nextId = 0
     , input = ""
-    , list = []
-    }
+    , list = localToDos
+    }, Cmd.none)
 
 
 
@@ -47,27 +52,37 @@ type Msg
     = Create
     | Delete Int
     | Input String
+    | NoOp
 
 
-update : Msg -> Model -> Model
+update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
     case msg of
         Create ->
-            { model | list =
+            ({ model | list =
                 model.list
                     ++ [ { id = model.nextId, text = model.input } ]
                 , input = ""
                 , nextId = model.nextId + 1
-            }
+            }, Cmd.none)
 
         Delete toDelete ->
-            { model
+            ({ model
                 | list = List.filter (\item -> item.id /= toDelete) model.list
-            }
+            }, Cmd.none)
 
         Input text ->
-            { model | input = text }
+            ({ model | input = text }, Cmd.none)
 
+        NoOp ->
+            (model, Cmd.none)
+
+
+-- SUBSCRIPTIONS
+
+subscriptions : Model -> Sub Msg
+subscriptions _ =
+  Sub.none
 
 
 -- VIEW
