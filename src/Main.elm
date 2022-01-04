@@ -1,4 +1,4 @@
-module Main exposing (..)
+port module Main exposing (..)
 
 import Browser
 import Html exposing (Html, button, div, form, input, text)
@@ -10,13 +10,30 @@ import Html.Events exposing (onClick, onInput, onSubmit)
 -- MAIN
 
 
+main : Program (Maybe Model) Model Msg
 main =
     Browser.element
         { init = init
-        , update = update
+        , update = updateWithStorage
         , view = view
-        , subscriptions = subscriptions
+        , subscriptions = \_ -> Sub.none
         }
+
+
+-- PORTS
+
+
+port setStorage : Model -> Cmd msg
+
+updateWithStorage : Msg -> Model -> ( Model, Cmd Msg )
+updateWithStorage msg model =
+    let
+        ( newModel, cmds ) =
+            update msg model
+    in
+        ( newModel
+        , Cmd.batch [ setStorage newModel, cmds ]
+        )
 
 
 
@@ -36,12 +53,16 @@ type alias Model =
     }
 
 
-init : List ToDo -> (Model, Cmd Msg)
-init localToDos =
-    ({ nextId = 0
-    , input = ""
-    , list = localToDos
-    }, Cmd.none)
+init : (Maybe Model) -> (Model, Cmd Msg)
+init localData =
+    case localData of
+        Just data ->
+            (data, Cmd.none)
+        Nothing ->
+            ({ nextId = 0
+            , input = ""
+            , list = []
+            }, Cmd.none)
 
 
 
@@ -76,13 +97,6 @@ update msg model =
 
         NoOp ->
             (model, Cmd.none)
-
-
--- SUBSCRIPTIONS
-
-subscriptions : Model -> Sub Msg
-subscriptions _ =
-  Sub.none
 
 
 -- VIEW
