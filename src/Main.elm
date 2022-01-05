@@ -20,10 +20,12 @@ main =
         }
 
 
+
 -- PORTS
 
 
 port setStorage : Model -> Cmd msg
+
 
 updateWithStorage : Msg -> Model -> ( Model, Cmd Msg )
 updateWithStorage msg model =
@@ -31,9 +33,9 @@ updateWithStorage msg model =
         ( newModel, cmds ) =
             update msg model
     in
-        ( newModel
-        , Cmd.batch [ setStorage newModel, cmds ]
-        )
+    ( newModel
+    , Cmd.batch [ setStorage newModel, cmds ]
+    )
 
 
 
@@ -53,16 +55,19 @@ type alias Model =
     }
 
 
-init : (Maybe Model) -> (Model, Cmd Msg)
+init : Maybe Model -> ( Model, Cmd Msg )
 init localData =
     case localData of
         Just data ->
-            (data, Cmd.none)
+            ( data, Cmd.none )
+
         Nothing ->
-            ({ nextId = 0
-            , input = ""
-            , list = []
-            }, Cmd.none)
+            ( { nextId = 0
+              , input = ""
+              , list = []
+              }
+            , Cmd.none
+            )
 
 
 
@@ -76,27 +81,33 @@ type Msg
     | NoOp
 
 
-update : Msg -> Model -> (Model, Cmd Msg)
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Create ->
-            ({ model | list =
-                model.list
-                    ++ [ { id = model.nextId, text = model.input } ]
+            ( { model
+                | list =
+                    model.list
+                        ++ [ { id = model.nextId, text = model.input } ]
                 , input = ""
                 , nextId = model.nextId + 1
-            }, Cmd.none)
+              }
+            , Cmd.none
+            )
 
         Delete toDelete ->
-            ({ model
+            ( { model
                 | list = List.filter (\item -> item.id /= toDelete) model.list
-            }, Cmd.none)
+              }
+            , Cmd.none
+            )
 
         Input text ->
-            ({ model | input = text }, Cmd.none)
+            ( { model | input = text }, Cmd.none )
 
         NoOp ->
-            (model, Cmd.none)
+            ( model, Cmd.none )
+
 
 
 -- VIEW
